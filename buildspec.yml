@@ -26,7 +26,7 @@ phases:
       - echo "Verifying upload to S3..."
       - aws s3 ls s3://cicd-bucketss/deployment_package.zip || (echo "deployment_package.zip not found in S3!"; exit 1)
       - echo "Updating Lambda function using the uploaded deployment package..."
-      - aws lambda update-function-code --function-name github-to-lambda-cide --s3-bucket cicd-bucketss --s3-key deployment_package.zip || (echo "Failed to update Lambda function!"; exit 1)
+      - aws lambda update-function-code --function-name github-to-lamda-cide --s3-bucket cicd-bucketss --s3-key deployment_package.zip || (echo "Failed to update Lambda function!"; exit 1)
       - echo "Deployment complete!"
 
 artifacts:
