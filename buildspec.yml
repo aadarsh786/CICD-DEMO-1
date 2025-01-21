@@ -8,12 +8,13 @@ phases:
       - echo "Installing dependencies..."
       - pip install -r requirements.txt -t libs
       - echo "Installing 7-Zip..."
-      - yum install -y p7zip  # Use 'yum' for Amazon Linux, ensures 7z is installed
+      - yum install -y p7zip  # Try installing p7zip on Amazon Linux
+      - echo "Verifying 7-Zip installation..."
+      - which 7z  # Verify 7z is installed correctly
+      - if ! which 7z; then echo "7-Zip installation failed!"; exit 1; fi  # Fail if 7z is not found
 
   build:
     commands:
-      - echo "Checking if 7z is available..."
-      - which 7z  # Verify if 7z is available in the PATH
       - echo "Creating deployment package with 7z..."
       - cd libs
       - 7z a ../deployment_package.7z *  # Archive all contents of 'libs'
