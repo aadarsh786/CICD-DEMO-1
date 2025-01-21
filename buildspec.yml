@@ -21,6 +21,8 @@ phases:
 
   post_build:
     commands:
+      - echo "Checking if deployment_package.zip exists in S3..."
+      - aws s3 ls s3://cicd-bucketss/deployment_package.zip  # Check if the file is present in the bucket
       - echo "Uploading to S3..."
       - aws s3 cp deployment_package.zip s3://cicd-bucketss/
       - echo "Updating Lambda function via S3..."
