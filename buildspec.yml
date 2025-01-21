@@ -7,28 +7,26 @@ phases:
     commands:
       - echo "Installing dependencies..."
       - pip install -r requirements.txt -t libs
-      - echo "Installing 7-Zip..."
-      - yum install -y p7zip  # Try installing p7zip on Amazon Linux
-      - echo "Verifying 7-Zip installation..."
-      - which 7z  # Verify 7z is installed correctly
-      - if ! which 7z; then echo "7-Zip installation failed!"; exit 1; fi  # Fail if 7z is not found
+      - echo "Verifying zip installation..."
+      - which zip  # Verify zip is installed
+      - if ! which zip; then echo "zip installation failed!"; exit 1; fi  # Fail if zip is not found
 
   build:
     commands:
-      - echo "Creating deployment package with 7z..."
+      - echo "Creating deployment package with zip..."
       - cd libs
-      - 7z a ../deployment_package.7z *  # Archive all contents of 'libs'
+      - zip -r ../deployment_package.zip *  # Archive all contents of 'libs' using zip
       - cd ..
-      - 7z a deployment_package.7z lambda_function.py  # Add 'lambda_function.py' to the archive
+      - zip deployment_package.zip lambda_function.py  # Add 'lambda_function.py' to the archive
 
   post_build:
     commands:
       - echo "Uploading to S3..."
-      - aws s3 cp deployment_package.7z s3://cicd-bucketss/
+      - aws s3 cp deployment_package.zip s3://cicd-bucketss/
       - echo "Updating Lambda function via S3..."
-      - aws lambda update-function-code --function-name github-to-lambda-cide --s3-bucket cicd-bucketss --s3-key deployment_package.7z
+      - aws lambda update-function-code --function-name github-to-lambda-cide --s3-bucket cicd-bucketss --s3-key deployment_package.zip
       - echo "Deployment complete!"
 
 artifacts:
   files:
-    - deployment_package.7z
+    - deployment_package.zip
