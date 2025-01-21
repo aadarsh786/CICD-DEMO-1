@@ -8,25 +8,25 @@ phases:
       - echo "Installing dependencies..."
       - pip install -r requirements.txt -t libs
       - echo "Verifying zip installation..."
-      - which zip  # Verify zip is installed
-      - if ! which zip; then echo "zip installation failed!"; exit 1; fi  # Fail if zip is not found
+      - if ! command -v zip > /dev/null; then echo "zip is not installed!"; exit 1; fi  # Check if zip is installed, fail if not
 
   build:
     commands:
       - echo "Creating deployment package with zip..."
       - cd libs
-      - zip -r ../deployment_package.zip *  # Archive all contents of 'libs' using zip
+      - zip -r ../deployment_package.zip .  # Archive all contents of 'libs' using zip
       - cd ..
-      - zip deployment_package.zip lambda_function.py  # Add 'lambda_function.py' to the archive
+      - zip -g deployment_package.zip lambda_function.py  # Add 'lambda_function.py' to the archive
+      - echo "Deployment package created successfully."
 
   post_build:
     commands:
-      - echo "Checking if deployment_package.zip exists in S3..."
-      - aws s3 ls s3://cicd-bucketss/deployment_package.zip  # Check if the file is present in the bucket
-      - echo "Uploading to S3..."
-      - aws s3 cp deployment_package.zip s3://cicd-bucketss/
-      - echo "Updating Lambda function via S3..."
-      - aws lambda update-function-code --function-name github-to-lambda-cide --s3-bucket cicd-bucketss --s3-key deployment_package.zip
+      - echo "Uploading deployment_package.zip to S3..."
+      - aws s3 cp deployment_package.zip s3://cicd-bucketss/ || (echo "Failed to upload deployment_package.zip to S3!"; exit 1)
+      - echo "Verifying upload to S3..."
+      - aws s3 ls s3://cicd-bucketss/deployment_package.zip || (echo "deployment_package.zip not found in S3!"; exit 1)
+      - echo "Updating Lambda function using the uploaded deployment package..."
+      - aws lambda update-function-code --function-name github-to-lambda-cide --s3-bucket cicd-bucketss --s3-key deployment_package.zip || (echo "Failed to update Lambda function!"; exit 1)
       - echo "Deployment complete!"
 
 artifacts:
